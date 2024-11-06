@@ -1,0 +1,41 @@
+from os import link
+import requests
+from bs4 import BeautifulSoup
+import openpyxl
+
+excel=openpyxl.Workbook()
+sheet=excel.active
+sheet.title="Infogain Careers"
+print(excel.sheetnames)
+sheet.append(["Job Designation","Job Location","Apply Here"])
+
+
+try:
+  source=requests.get('https://www.infogain.com/careers/listing/')
+  source.raise_for_status()
+  soup=BeautifulSoup(source.content,'html.parser')
+  careers=soup.find('tbody', id="jobdata").find_all('tr')
+
+  for career in careers:
+    
+    #Designation=career.find('td', class_="jobDescription-table-data").a.text.strip()
+    designation_element = career.find('td', class_="jobDescription-table-data").a
+    Designation = designation_element.text.strip() if designation_element else "N/A" 
+    
+
+    Location=career.find('td', class_="jobLocation-table-data").text.strip()
+
+    #Link=Designation=career.find('td', class_="jobDescription-table-data").a.get('href')
+    Link = designation_element.get('href') if designation_element else "N/A"
+
+    #Updated=career.find('td', class_="jobData-table-data")
+    
+    print(Designation,Location,Link)
+    sheet.append([Designation,Location,Link])
+
+  
+except Exception as e:
+  print(e)
+
+excel.save('Infogain Careers.xlsx')
+print("Excel file created: Infogain Careers.xlsx")
